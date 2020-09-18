@@ -1,4 +1,17 @@
 package models.commandes.utilisateur;
 
-public interface CommandeUtilisateur {
+import models.commandes.moteur.CommandeMoteur;
+
+public abstract class CommandeUtilisateur {
+    /**
+     * Commande moteur reliée
+     */
+    protected CommandeMoteur linkedEngineCommand = null;
+
+    /**
+     * Notifier le moteur de la demande
+     */
+    public void notifyEngine() {
+        linkedEngineCommand.execute();
+    }
 }
