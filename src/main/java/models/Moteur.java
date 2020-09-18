@@ -1,5 +1,10 @@
 package models;
 
+import models.commandes.moteur.ArretProchainNiveau;
+import models.commandes.moteur.ArretUrgence;
+import models.commandes.moteur.Descendre;
+import models.commandes.moteur.Monter;
+
 import java.util.ArrayList;
 
 public class Moteur {
@@ -38,6 +43,17 @@ public class Moteur {
         this.actualHeight = getHeightFromLevel(defaultLevel);
         this.nextLevels = new ArrayList<>();
         this.isEmergencyStopped = false;
+        linkCommands();
+    }
+
+    /**
+     * Relie les commandes système au moteur
+     */
+    private void linkCommands() {
+        ArretProchainNiveau.getInstance().linkEngine(this);
+        ArretUrgence.getInstance().linkEngine(this);
+        Descendre.getInstance().linkEngine(this);
+        Monter.getInstance().linkEngine(this);
     }
 
     /**
