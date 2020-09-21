@@ -7,6 +7,8 @@ import models.commandes.utilisateur.interieur.DeplacementNiveau;
 
 import java.util.ArrayList;
 
+import static java.lang.Thread.sleep;
+
 public class Ascenseur {
 
     /**
@@ -63,9 +65,24 @@ public class Ascenseur {
 
     public static void main(String[] args) {
         Ascenseur ascenseur = new Ascenseur(4,0);
-        ascenseur.getExternalButtons().get(0).click();
-        ascenseur.getExternalButtons().get(1).click();
-        ascenseur.getInternalButtons().get(0).click();
-        ascenseur.getInternalButtons().get(1).click();
+        System.out.println("Niveau ascenseur:  " + ascenseur.getEngine().getActualLevel());
+        System.out.println("Hauteur ascenseur: " + ascenseur.getEngine().getActualHeight());
+
+        //Boutons extérieur
+        Bouton descendre = ascenseur.getExternalButtons().get(0);
+        Bouton monter = ascenseur.getExternalButtons().get(1);
+
+        //Boutons intérieur
+        Bouton arretUrgence = ascenseur.getInternalButtons().get(0);
+        Bouton deplacementNiveau = ascenseur.getInternalButtons().get(1);
+
+        descendre.press("4");
+        descendre.press("2");
+        try {
+            sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        deplacementNiveau.press("1");
     }
 }

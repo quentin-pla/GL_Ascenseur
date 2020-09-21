@@ -17,9 +17,9 @@ public class Bouton {
     }
 
     /**
-     * Simulation d'un appui sur le bouton
+     * Simulation d'un appui sur le bouton avec paramètres
      */
-    public void click() {
-        userCommand.notifyEngine();
+    public void press(String... args) {
+        userCommand.notifyEngine(args);
     }
 }

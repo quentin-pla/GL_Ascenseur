@@ -1,6 +1,7 @@
 package models.commandes.utilisateur.exterieur;
 
-import models.commandes.moteur.Monter;
+import models.Moteur;
+import models.commandes.moteur.ArretProchainNiveau;
 import models.commandes.utilisateur.CommandeUtilisateur;
 
 public class AppelMonter extends CommandeUtilisateur {
@@ -13,7 +14,9 @@ public class AppelMonter extends CommandeUtilisateur {
      * Constructeur
      */
     private AppelMonter() {
-        this.linkedEngineCommand = Monter.getInstance();
+        this.linkedEngineCommand = ArretProchainNiveau.getInstance();
+        argsCount = 1; //Un argument pour savoir depuis quel niveau l'appel a été spécifié
+        preArgs.add(Moteur.Direction.UP.toString()); //Direction souhaitée
     }
 
     /**

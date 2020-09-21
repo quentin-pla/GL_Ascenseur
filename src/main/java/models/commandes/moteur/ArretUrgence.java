@@ -1,22 +1,24 @@
 package models.commandes.moteur;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class ArretUrgence extends CommandeMoteur {
     /**
      * Instance unique
      */
-    private static ArretUrgence instance = null;
+    private static AtomicReference<ArretUrgence> instance = null;
 
     /**
      * Récupérer l'instance unique
      * @return instance
      */
     public static CommandeMoteur getInstance() {
-        if (instance == null) instance = new ArretUrgence();
-        return instance;
+        if (instance == null) instance = new AtomicReference<>(new ArretUrgence());
+        return instance.get();
     }
 
     @Override
-    public void execute() {
+    public void run() {
         System.out.println("Arret urgence");
     }
 }
