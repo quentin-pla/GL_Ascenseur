@@ -1,7 +1,5 @@
 package models.commandes.moteur;
 
-import models.Moteur;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Monter extends CommandeMoteur {
@@ -15,7 +13,10 @@ public class Monter extends CommandeMoteur {
      * @return instance
      */
     public static CommandeMoteur getInstance() {
-        if (instance == null) instance = new AtomicReference<>(new Monter());
+        if (instance == null) {
+            instance = new AtomicReference<>(new Monter());
+            instance.get().setName("Monter");
+        }
         return instance.get();
     }
 
@@ -25,14 +26,14 @@ public class Monter extends CommandeMoteur {
             if (!getEngine().getIsOpen().get() &&
                 getEngine().getNextStop().get() != -1 &&
                 getEngine().getActualLevel().get() < getEngine().getLevels() &&
-                getEngine().getActualDirection().get() == Moteur.Direction.UP) {
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                getEngine().getActualLevel().getAndIncrement();
-                System.out.println("Montée de l'ascenseur: " + getEngine().getActualLevel());
+                getEngine().getActualDirection().get().equals("UP")) {
+                getEngine().incrementActualLevel();
+                lock();
+            }
+            try {
+                sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

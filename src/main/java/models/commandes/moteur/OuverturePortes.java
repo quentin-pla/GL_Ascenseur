@@ -13,24 +13,43 @@ public class OuverturePortes extends CommandeMoteur {
      * @return instance
      */
     public static CommandeMoteur getInstance() {
-        if (instance == null) instance = new AtomicReference<>(new OuverturePortes());
+        if (instance == null) {
+            instance = new AtomicReference<>(new OuverturePortes());
+            instance.get().setName("OuverturePortes");
+        }
         return instance.get();
     }
 
     @Override
     public void run() {
         while (true) {
-            if (getEngine().getIsOpen().get()) {
+            if (getEngine().getNextStop().get() == getEngine().getActualLevel().get()) {
+                lock();
                 try {
-                    sleep(1000);
-                    System.out.println("-> Ouverture des portes");
-                    sleep(2000);
-                    System.out.println("-> Fermeture des portes");
                     sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                getEngine().setIsOpen(true);
+                System.out.println("<- Ouverture ->");
+                try {
+                    sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 getEngine().setIsOpen(false);
+                System.out.println("-> Fermeture <-");
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                getEngine().levelPerformed();
+            }
+            try {
+                sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

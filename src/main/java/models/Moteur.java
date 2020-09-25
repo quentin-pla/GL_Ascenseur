@@ -1,17 +1,23 @@
 package models;
 
-import models.commandes.moteur.ArretProchainNiveau;
-import models.commandes.moteur.Descendre;
-import models.commandes.moteur.Monter;
-import models.commandes.moteur.OuverturePortes;
+import models.commandes.moteur.*;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Moteur {
+    /**
+     * Mode de débugage
+     */
+    private boolean debugMode = false;
+
     /**
      * Nombre de niveaux (constant)
      */
@@ -38,16 +44,9 @@ public class Moteur {
     private volatile PriorityBlockingQueue<Integer> nextDownLevels;
 
     /**
-     * Direction de l'ascenseur
-     */
-    public enum Direction {
-        UP, DOWN, NONE
-    }
-
-    /**
      * Direction actuelle de l'ascenseur
      */
-    private AtomicReference<Direction> actualDirection;
+    private AtomicReference<String> actualDirection;
 
     /**
      * Arrêt d'urgence
@@ -60,6 +59,11 @@ public class Moteur {
     private AtomicBoolean isOpen;
 
     /**
+     * Listeners sur le moteur
+     */
+    private List<PropertyChangeListener> listener = new ArrayList<>();
+
+    /**
      * Constructeur par défaut
      */
     public Moteur(int levels, int defaultLevel) {
@@ -67,7 +71,7 @@ public class Moteur {
         this.actualLevel = new AtomicInteger(defaultLevel);
         this.nextUpLevels = new PriorityBlockingQueue<>(4);
         this.nextDownLevels = new PriorityBlockingQueue<>(4, Comparator.reverseOrder());
-        this.actualDirection = new AtomicReference<>(Direction.NONE);
+        this.actualDirection = new AtomicReference<>("");
         this.isEmergencyStopped = new AtomicBoolean(false);
         this.isOpen = new AtomicBoolean(false);
         this.nextStop = new AtomicInteger(-1);
@@ -80,7 +84,7 @@ public class Moteur {
     private void initCommands() {
         ArretProchainNiveau.getInstance().linkEngine(this);
         OuverturePortes.getInstance().linkEngine(this);
-        //ArretUrgence.getInstance().linkEngine(this);
+        ArretUrgence.getInstance().linkEngine(this);
         Descendre.getInstance().linkEngine(this);
         Monter.getInstance().linkEngine(this);
     }
@@ -90,12 +94,12 @@ public class Moteur {
      * @return prochain niveau
      */
     public int getNextLevel() {
-        final Direction finalDirection = actualDirection.get();
+        final String finalDirection = actualDirection.get();
         int nextLevel = -1;
-        if (finalDirection == Direction.UP) {
+        if (finalDirection.equals("UP")) {
             final Integer upHead = getNextUpLevels().peek();
             if (upHead != null) nextLevel = upHead;
-        } else if (finalDirection == Direction.DOWN) {
+        } else if (finalDirection.equals("DOWN")) {
             final Integer downHead = getNextDownLevels().peek();
             if (downHead != null) nextLevel = downHead;
         }
@@ -106,67 +110,107 @@ public class Moteur {
      * Récupérer la prochaine direction de l'ascenseur
      * @return prochaine direction
      */
-    public Direction getNextDirection() {
-        Direction nextDirection = null;
+    public String getNextDirection() {
+        String nextDirection = "";
         if (nextUpLevels.isEmpty() && nextDownLevels.isEmpty())
-            nextDirection = Direction.NONE;
+            nextDirection = "";
         else if (nextUpLevels.isEmpty() || actualLevel.get() >= levels)
-            nextDirection = Direction.DOWN;
+            nextDirection = "DOWN";
         else if (nextDownLevels.isEmpty() || actualLevel.get() <= 0)
-            nextDirection = Direction.UP;
+            nextDirection = "UP";
+        else System.out.println("ERROR NEXT DIRECTION");
         return nextDirection;
     }
 
     /**
-     * Ajouter un niveau à s'arrêter
+     * Ajouter un niveau à satisfaire
      * @param direction direction
      * @param nextLevel prochain niveau
      */
-    public void addNextLevel(int nextLevel, Direction direction) {
-        if (actualDirection.get() == Direction.NONE) {
-            if (nextLevel > actualLevel.get()) {
-                nextUpLevels.add(nextLevel);
-                setNextStop(nextLevel);
-                setActualDirection(Direction.UP);
-            } else if (nextLevel < actualLevel.get()) {
-                nextDownLevels.add(nextLevel);
-                setNextStop(nextLevel);
-                setActualDirection(Direction.DOWN);
+    public void addNextLevel(int nextLevel, String direction) {
+        if (!nextUpLevels.contains(nextLevel) && !nextDownLevels.contains(nextLevel)) {
+            if (actualDirection.get().equals("")) {
+                if (nextLevel > actualLevel.get()) {
+                    nextUpLevels.add(nextLevel);
+                    setNextStop(nextLevel);
+                    setActualDirection("UP");
+                } else if (nextLevel < actualLevel.get()) {
+                    nextDownLevels.add(nextLevel);
+                    setNextStop(nextLevel);
+                    setActualDirection("DOWN");
+                } else {
+                    setNextStop(nextLevel);
+                }
             } else {
-                setIsOpen(true);
+                if (direction.equals("UP")) {
+                    if (actualDirection.get().equals("DOWN")) nextUpLevels.add(nextLevel);
+                    else if (actualDirection.get().equals("UP")) {
+                        if (actualLevel.get() < nextLevel) nextUpLevels.add(nextLevel);
+                        else nextDownLevels.add(nextLevel);
+                    }
+                }
+                else if (direction.equals("DOWN")) {
+                    if (actualDirection.get().equals("UP")) nextDownLevels.add(nextLevel);
+                    else if (actualDirection.get().equals("DOWN")) {
+                        if (actualLevel.get() > nextLevel) nextDownLevels.add(nextLevel);
+                        else nextUpLevels.add(nextLevel);
+                    }
+                }
+                else {
+                    if (nextLevel < actualLevel.get()) nextDownLevels.add(nextLevel);
+                    else if (nextLevel > actualLevel.get()) nextUpLevels.add(nextLevel);
+                    else OuverturePortes.getInstance().unlock();
+                }
             }
-        } else {
-            if (direction == Direction.UP) nextUpLevels.add(nextLevel);
-            else if (direction == Direction.DOWN) nextDownLevels.add(nextLevel);
-            else {
-                if (nextLevel < actualLevel.get()) nextDownLevels.add(nextLevel);
-                else if (nextLevel > actualLevel.get()) nextUpLevels.add(nextLevel);
-                else setIsOpen(true);
-            }
+            if (debugMode) System.out.println("up: " + nextUpLevels + " down: " + nextDownLevels);
         }
-        System.out.println("up: " + nextUpLevels + " down: " + nextDownLevels);
     }
 
     /**
      * Lorsque que le moteur s'est arrêté à un niveau demandé
      */
     public void levelPerformed() {
-        if (actualDirection.get() == Direction.UP) nextUpLevels.remove();
-        else nextDownLevels.remove();
-        setIsOpen(true);
+        if (actualDirection.get().equals("UP")) nextUpLevels.remove();
+        else if (actualDirection.get().equals("DOWN")) nextDownLevels.remove();
         setActualDirection(getNextDirection());
+        if (debugMode) System.out.println("Next direction: " + getActualDirection());
         setNextStop(getNextLevel());
+        if (debugMode) System.out.println("Next Stop: " + getNextStop());
     }
 
     /**
-     * Retourne la hauteur en mètres à partir d'un niveau
-     * @param level niveau
-     * @return hauteur en mètres
+     * Notifier les listeners
+     * @param property propriété
+     * @param newValue valeur
      */
-    private double getHeightFromLevel(int level) {
-        //La cabine de l'ascenseur fait 2 mètres de haut,
-        //entre chaque niveau il y a une marge de 40cm
-        return 2.4*level;
+    private void notifyListeners(String property, String newValue) {
+        for (PropertyChangeListener name : listener) {
+            name.propertyChange(new PropertyChangeEvent(this, property, null, newValue));
+        }
+    }
+
+    /**
+     * Ajouter un listener sur le moteur
+     * @param newListener listener
+     */
+    public void addChangeListener(PropertyChangeListener newListener) {
+        listener.add(newListener);
+    }
+
+    /**
+     * Incrémenter le niveau actuel
+     */
+    public void incrementActualLevel() {
+        getActualLevel().getAndIncrement();
+        notifyListeners("actualLevel",this.actualLevel.get()+"");
+    }
+
+    /**
+     * Décrémenter le niveau actuel
+     */
+    public void decrementActualLevel() {
+        getActualLevel().getAndDecrement();
+        notifyListeners("actualLevel",this.actualLevel.get()+"");
     }
 
     /*** GETTERS & SETTERS ***/
@@ -177,23 +221,30 @@ public class Moteur {
 
     public AtomicInteger getNextStop() { return nextStop; }
 
-    public void setNextStop(int nextStop) { this.nextStop.getAndSet(nextStop); }
-
-    public double getActualHeight() { return getHeightFromLevel(actualLevel.get()); }
+    public void setNextStop(int nextStop) {
+        this.nextStop.getAndSet(nextStop);
+        notifyListeners("nextStop",this.nextStop.get()+"");
+    }
 
     public PriorityBlockingQueue<Integer> getNextUpLevels() { return nextUpLevels; }
 
     public PriorityBlockingQueue<Integer> getNextDownLevels() { return nextDownLevels; }
 
-    public AtomicReference<Direction> getActualDirection() { return actualDirection; }
+    public AtomicReference<String> getActualDirection() { return actualDirection; }
 
-    public void setActualDirection(Direction actualDirection) { this.actualDirection.getAndSet(actualDirection); }
+    public void setActualDirection(String actualDirection) { this.actualDirection.getAndSet(actualDirection); }
 
     public AtomicBoolean isEmergencyStopped() { return isEmergencyStopped; }
 
-    public void setEmergencyStopped(boolean emergencyStopped) { isEmergencyStopped.getAndSet(emergencyStopped); }
+    public void setEmergencyStopped(boolean emergencyStopped) {
+        this.isEmergencyStopped.getAndSet(emergencyStopped);
+        notifyListeners("isEmergencyStopped",this.isEmergencyStopped.get()+"");
+    }
 
     public AtomicBoolean getIsOpen() { return isOpen; }
 
-    public void setIsOpen(boolean isOpen) { this.isOpen.getAndSet(isOpen); }
+    public void setIsOpen(boolean isOpen) {
+        this.isOpen.getAndSet(isOpen);
+        notifyListeners("isOpen",this.isOpen.get()+"");
+    }
 }

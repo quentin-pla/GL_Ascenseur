@@ -14,6 +14,7 @@ public class DemandeArretUrgence extends CommandeUtilisateur {
      */
     private DemandeArretUrgence() {
         this.linkedEngineCommand = ArretUrgence.getInstance();
+        argsCount = 1;
     }
 
     /**

@@ -1,6 +1,5 @@
 package models.commandes.utilisateur.exterieur;
 
-import models.Moteur;
 import models.commandes.moteur.ArretProchainNiveau;
 import models.commandes.utilisateur.CommandeUtilisateur;
 
@@ -16,7 +15,7 @@ public class AppelDescendre extends CommandeUtilisateur {
     private AppelDescendre() {
         this.linkedEngineCommand = ArretProchainNiveau.getInstance();
         argsCount = 1; //Un argument pour savoir depuis quel niveau l'appel a été spécifié
-        preArgs.add(Moteur.Direction.DOWN.toString()); //Direction souhaitée
+        preArgs.add("DOWN"); //Direction souhaitée
     }
 
     /**

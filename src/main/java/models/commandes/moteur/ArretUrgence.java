@@ -19,6 +19,17 @@ public class ArretUrgence extends CommandeMoteur {
 
     @Override
     public void run() {
-        System.out.println("Arret urgence");
+        while (true) {
+            try {
+                sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (!args.isEmpty() && args.element().length == 1) {
+                final String[] actualArgs = args.remove();
+                System.out.println(actualArgs[0].equals("true") ? "Interruption du moteur." : "Reprise du moteur.");
+                getEngine().setEmergencyStopped(Boolean.parseBoolean(actualArgs[0]));
+            }
+        }
     }
 }
