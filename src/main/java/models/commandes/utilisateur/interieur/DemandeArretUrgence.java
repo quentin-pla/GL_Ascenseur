@@ -1,28 +1,23 @@
 package models.commandes.utilisateur.interieur;
 
-import models.commandes.moteur.ArretUrgence;
+import models.Moteur;
 import models.commandes.utilisateur.CommandeUtilisateur;
 
+/**
+ * Commande utilisateur pour demander un arrêt d'urgence
+ */
 public class DemandeArretUrgence extends CommandeUtilisateur {
-    /**
-     * Instance unique
-     */
-    protected static DemandeArretUrgence instance = null;
-
     /**
      * Constructeur
      */
-    private DemandeArretUrgence() {
-        this.linkedEngineCommand = ArretUrgence.getInstance();
+    public DemandeArretUrgence(Moteur engine) {
+        super(engine);
         argsCount = 1;
     }
 
-    /**
-     * Récupérer l'instance unique
-     * @return instance
-     */
-    public static CommandeUtilisateur getInstance() {
-        if (instance == null) instance = new DemandeArretUrgence();
-        return instance;
+    @Override
+    public void notifyEngine(String... args) {
+        checkArgsLength(args);
+        engine.executeArretUrgence(getFinalArgs(args));
     }
 }

@@ -11,14 +11,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Graphique des boutons intérieurs
+ */
 public class BoutonsInterieurCanvas extends JPanel implements MouseListener {
-
+    /**
+     * Vue
+     */
     private VueAscenseur view;
 
+    /**
+     * Liste des boutons
+     */
     private Map<String,Shape> buttons;
 
+    /**
+     * Liste des boutons actifs
+     */
     private ArrayList<String> activeButtons;
 
+    /**
+     * Constructeur
+     * @param view vue
+     */
     public BoutonsInterieurCanvas(VueAscenseur view) {
         this.view = view;
         this.buttons = new HashMap<>();
@@ -87,7 +102,7 @@ public class BoutonsInterieurCanvas extends JPanel implements MouseListener {
 
     /**
      * Nouvelle saisie utilisateur
-     * @param value
+     * @param value valeur
      */
     private void newInput(String value) {
         if (!activeButtons.contains(value)) activeButtons.add(value);

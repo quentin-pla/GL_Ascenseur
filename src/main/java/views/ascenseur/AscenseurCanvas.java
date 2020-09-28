@@ -7,6 +7,9 @@ import java.awt.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Graphique de l'ascenseur
+ */
 public class AscenseurCanvas extends JPanel {
     /**
      * Vue

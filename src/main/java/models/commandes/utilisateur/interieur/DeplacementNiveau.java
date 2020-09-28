@@ -1,29 +1,24 @@
 package models.commandes.utilisateur.interieur;
 
-import models.commandes.moteur.ArretProchainNiveau;
+import models.Moteur;
 import models.commandes.utilisateur.CommandeUtilisateur;
 
+/**
+ * Commande moteur pour se déplacer à un niveau spécifique
+ */
 public class DeplacementNiveau extends CommandeUtilisateur {
-    /**
-     * Instance unique
-     */
-    protected static DeplacementNiveau instance = null;
-
     /**
      * Constructeur
      */
-    private DeplacementNiveau() {
-        linkedEngineCommand = ArretProchainNiveau.getInstance();
+    public DeplacementNiveau(Moteur engine) {
+        super(engine);
         argsCount = 1;
         preArgs.add(""); //Direction
     }
 
-    /**
-     * Récupérer l'instance unique
-     * @return instance
-     */
-    public static CommandeUtilisateur getInstance() {
-        if (instance == null) instance = new DeplacementNiveau();
-        return instance;
+    @Override
+    public void notifyEngine(String... args) {
+        checkArgsLength(args);
+        engine.executeArretProchainNiveau(getFinalArgs(args));
     }
 }

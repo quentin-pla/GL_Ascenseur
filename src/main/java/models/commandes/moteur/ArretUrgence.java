@@ -1,35 +1,23 @@
 package models.commandes.moteur;
 
-import java.util.concurrent.atomic.AtomicReference;
+import models.Moteur;
 
+/**
+ * Commande moteur gérant les arrêts d'urgence
+ */
 public class ArretUrgence extends CommandeMoteur {
     /**
-     * Instance unique
+     * Constructeur
+     * @param engine moteur
      */
-    private static AtomicReference<ArretUrgence> instance = null;
-
-    /**
-     * Récupérer l'instance unique
-     * @return instance
-     */
-    public static CommandeMoteur getInstance() {
-        if (instance == null) instance = new AtomicReference<>(new ArretUrgence());
-        return instance.get();
+    public ArretUrgence(Moteur engine) {
+        super(engine);
+        argsCount = 1;
     }
 
     @Override
     public void run() {
-        while (true) {
-            try {
-                sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (!args.isEmpty() && args.element().length == 1) {
-                final String[] actualArgs = args.remove();
-                System.out.println(actualArgs[0].equals("true") ? "Interruption du moteur." : "Reprise du moteur.");
-                getEngine().setEmergencyStopped(Boolean.parseBoolean(actualArgs[0]));
-            }
-        }
+        System.out.println(args[0].equals("true") ? "Interruption du moteur." : "Reprise du moteur.");
+        getEngine().setEmergencyStopped(Boolean.parseBoolean(args[0]));
     }
 }

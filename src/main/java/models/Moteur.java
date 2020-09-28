@@ -1,7 +1,6 @@
 package models;
 
 import models.commandes.moteur.*;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -12,6 +11,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Moteur de l'ascenseur
+ */
 public class Moteur {
     /**
      * Mode de débugage
@@ -54,14 +56,19 @@ public class Moteur {
     private AtomicBoolean isEmergencyStopped;
 
     /**
-     * L'ascenseur est ouvert
+     * État de l'ouverture
      */
     private AtomicBoolean isOpen;
 
     /**
-     * Listeners sur le moteur
+     * Listener sur le moteur
      */
-    private List<PropertyChangeListener> listener = new ArrayList<>();
+    private List<PropertyChangeListener> listener;
+
+    /**
+     * Liste des commandes associées
+     */
+    private ArrayList<CommandeMoteur> commands;
 
     /**
      * Constructeur par défaut
@@ -75,6 +82,8 @@ public class Moteur {
         this.isEmergencyStopped = new AtomicBoolean(false);
         this.isOpen = new AtomicBoolean(false);
         this.nextStop = new AtomicInteger(-1);
+        this.listener = new ArrayList<>();
+        this.commands = new ArrayList<>();
         initCommands();
     }
 
@@ -82,11 +91,48 @@ public class Moteur {
      * Relie les commandes système au moteur
      */
     private void initCommands() {
-        ArretProchainNiveau.getInstance().linkEngine(this);
-        OuverturePortes.getInstance().linkEngine(this);
-        ArretUrgence.getInstance().linkEngine(this);
-        Descendre.getInstance().linkEngine(this);
-        Monter.getInstance().linkEngine(this);
+        commands.add(new ArretProchainNiveau(this));
+        commands.add(new OuverturePortes(this));
+        commands.add(new ArretUrgence(this));
+        commands.add(new Descendre(this));
+        commands.add(new Monter(this));
+    }
+
+    /**
+     * Exécuter la commande arrêt prochain niveau
+     * @param args paramètres
+     */
+    public void executeArretProchainNiveau(String... args) {
+        getArretProchainNiveau().setArgs(args);
+        new Thread(getArretProchainNiveau()).start();
+    }
+
+    /**
+     * Exécuter la commande ouverture des portes
+     */
+    public void executeOuverturePortes() { new Thread(getOuverturesPortes()).start(); }
+
+    /**
+     * Exécuter la commande arrêt urgence
+     * @param args paramètres
+     */
+    public void executeArretUrgence(String... args) {
+        getArretUrgence().setArgs(args);
+        new Thread(getArretUrgence()).start();
+    }
+
+    /**
+     * Exécuter la commande descendre
+     */
+    public void executeDescendre() {
+        new Thread(getDescendre()).start();
+    }
+
+    /**
+     * Exécuter la commande monter
+     */
+    public void executeMonter() {
+        new Thread(getMonter()).start();
     }
 
     /**
@@ -132,12 +178,12 @@ public class Moteur {
             if (actualDirection.get().equals("")) {
                 if (nextLevel > actualLevel.get()) {
                     nextUpLevels.add(nextLevel);
-                    setNextStop(nextLevel);
                     setActualDirection("UP");
+                    setNextStop(nextLevel);
                 } else if (nextLevel < actualLevel.get()) {
                     nextDownLevels.add(nextLevel);
-                    setNextStop(nextLevel);
                     setActualDirection("DOWN");
+                    setNextStop(nextLevel);
                 } else {
                     setNextStop(nextLevel);
                 }
@@ -159,7 +205,7 @@ public class Moteur {
                 else {
                     if (nextLevel < actualLevel.get()) nextDownLevels.add(nextLevel);
                     else if (nextLevel > actualLevel.get()) nextUpLevels.add(nextLevel);
-                    else OuverturePortes.getInstance().unlock();
+                    else executeOuverturePortes();
                 }
             }
             if (debugMode) System.out.println("up: " + nextUpLevels + " down: " + nextDownLevels);
@@ -247,4 +293,14 @@ public class Moteur {
         this.isOpen.getAndSet(isOpen);
         notifyListeners("isOpen",this.isOpen.get()+"");
     }
+
+    public CommandeMoteur getArretProchainNiveau() { return commands.get(0); }
+
+    public CommandeMoteur getOuverturesPortes() { return commands.get(1); }
+
+    public CommandeMoteur getArretUrgence() { return commands.get(2); }
+
+    public CommandeMoteur getDescendre() { return commands.get(3); }
+
+    public CommandeMoteur getMonter() { return commands.get(4); }
 }

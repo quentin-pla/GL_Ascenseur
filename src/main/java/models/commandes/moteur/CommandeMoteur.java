@@ -1,16 +1,12 @@
 package models.commandes.moteur;
 
 import models.Moteur;
-
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class CommandeMoteur extends Thread {
-    /**
-     * Mode de débugage
-     */
-    private boolean debugMode = false;
-
+/**
+ * Commande moteur abstraite
+ */
+public abstract class CommandeMoteur implements Runnable {
     /**
      * Moteur lié
      */
@@ -19,23 +15,32 @@ public abstract class CommandeMoteur extends Thread {
     /**
      * Arguments passés en paramètre
      */
-    protected LinkedBlockingQueue<String[]> args;
+    protected String[] args;
 
     /**
-     * Lier un moteur
+     * Nombre d'arguments autorisés
+     */
+    protected int argsCount;
+
+    /**
+     * Constructeur
      * @param engine moteur
      */
-    public void linkEngine(Moteur engine) {
+    public CommandeMoteur(Moteur engine) {
         this.engine = new AtomicReference<>(engine);
-        this.args = new LinkedBlockingQueue<>();
-        start();
+        this.args = new String[]{};
+        this.argsCount = 0;
     }
 
     /**
-     * Exécuter la commande sur le moteur
+     * Vérifier le nombre d'arguments passé en paramètre
      */
-    public void execute(String... args) {
-        this.args.add(args);
+    protected void checkArgsLength() {
+        try {
+            if (args.length != argsCount) throw new Exception("Nombre d'arguments invalide");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -55,37 +60,16 @@ public abstract class CommandeMoteur extends Thread {
         return calledLevel;
     }
 
-    /**
-     * Verrouiller le thread
-     */
-    synchronized public void lock() {
-        try {
-            if (debugMode) System.out.println(getName() + " LOCKED");
-            wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Déverouiller le thread
-     */
-    synchronized public void unlock() {
-        if (debugMode) System.out.println(getName() + " UNLOCKED");
-        notify();
-    }
-
-    /**
-     * Savoir si le thread est verrouillé ou pas
-     * @return état du thread
-     */
-    public boolean isLocked() {
-        return getState().toString().equals("WAITING");
-    }
-
     /*** GETTERS & SETTERS ***/
 
     public Moteur getEngine() {
         return engine.get();
+    }
+
+    public String[] getArgs() { return args; }
+
+    public void setArgs(String... args) {
+        this.args = args;
+        checkArgsLength();
     }
 }

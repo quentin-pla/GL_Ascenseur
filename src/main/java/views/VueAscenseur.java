@@ -11,8 +11,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Affichage graphique de l'ascenseur
+ */
 public class VueAscenseur extends JFrame {
-
     /**
      * Liste des écouteurs
      */

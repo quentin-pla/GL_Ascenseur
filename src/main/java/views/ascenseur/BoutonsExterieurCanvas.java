@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Graphique des boutons extérieurs
+ */
 public class BoutonsExterieurCanvas extends JPanel implements MouseListener {
     /**
      * Vue

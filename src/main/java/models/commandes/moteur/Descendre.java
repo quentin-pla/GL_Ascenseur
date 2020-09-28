@@ -1,40 +1,26 @@
 package models.commandes.moteur;
 
-import java.util.concurrent.atomic.AtomicReference;
+import models.Moteur;
 
+/**
+ * Commande moteur pour descendre l'ascenseur
+ */
 public class Descendre extends CommandeMoteur {
     /**
-     * Instance unique
+     * Constructeur
+     * @param engine moteur
      */
-    private static AtomicReference<Descendre> instance = null;
-
-    /**
-     * Récupérer l'instance unique
-     * @return instance
-     */
-    public static CommandeMoteur getInstance() {
-        if (instance == null) {
-            instance = new AtomicReference<>(new Descendre());
-            instance.get().setName("Descendre");
-        }
-        return instance.get();
+    public Descendre(Moteur engine) {
+        super(engine);
     }
 
     @Override
     public void run() {
-        while (true) {
-            if (!getEngine().getIsOpen().get() &&
-                getEngine().getNextStop().get() != -1 &&
-                getEngine().getActualLevel().get() > 0 &&
-                getEngine().getActualDirection().get().equals("DOWN")) {
-                getEngine().decrementActualLevel();
-                lock();
-            }
-            try {
-                sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        if (!getEngine().getIsOpen().get() &&
+            getEngine().getNextStop().get() != -1 &&
+            getEngine().getActualLevel().get() > 0 &&
+            getEngine().getActualDirection().get().equals("DOWN")) {
+            getEngine().decrementActualLevel();
         }
     }
 }

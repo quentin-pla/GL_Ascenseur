@@ -1,21 +1,16 @@
 package controllers;
 
+import models.Ascenseur;
 import models.Moteur;
-import models.commandes.moteur.Descendre;
-import models.commandes.moteur.Monter;
-import models.commandes.moteur.OuverturePortes;
-import models.commandes.utilisateur.exterieur.AppelDescendre;
-import models.commandes.utilisateur.exterieur.AppelMonter;
-import models.commandes.utilisateur.interieur.DemandeArretUrgence;
-import models.commandes.utilisateur.interieur.DeplacementNiveau;
 import views.VueAscenseur;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import static java.lang.Thread.sleep;
-
-public class ControleurMoteur implements PropertyChangeListener {
+/**
+ * Controleur de l'ascenseur
+ */
+public class ControleurAscenseur implements PropertyChangeListener {
     /**
      * Mode de débugage
      */
@@ -24,22 +19,16 @@ public class ControleurMoteur implements PropertyChangeListener {
     /**
      * Vue ascenseur
      */
-    private VueAscenseur view;
-
-    /**
-     * Moteur
-     */
-    private Moteur engine;
+    private Ascenseur ascenseur;
 
     /**
      * Constructeur par défaut
-     * @param engine moteur
+     * @param ascenseur ascenseur
      */
-    public ControleurMoteur(Moteur engine) {
-        this.engine = engine;
-        this.view = new VueAscenseur(engine.getLevels(), engine.getActualLevel().get());
-        this.view.addChangeListener(this);
-        this.engine.addChangeListener(this);
+    public ControleurAscenseur(Ascenseur ascenseur) {
+        this.ascenseur = ascenseur;
+        getView().addChangeListener(this);
+        getEngine().addChangeListener(this);
     }
 
     @Override
@@ -71,16 +60,16 @@ public class ControleurMoteur implements PropertyChangeListener {
 
     /**
      * Gérer les animations
-     * @param value valeur
+     * @param inProgress valeur
      */
-    private void manageAnimations(boolean value) {
-        if (!value) {
-            if (debugMode) System.out.println("Niveau actuel: " + engine.getActualLevel());
-            if (!OuverturePortes.getInstance().isLocked()) {
-                if (Monter.getInstance().isLocked()) Monter.getInstance().unlock();
-                else if (Descendre.getInstance().isLocked()) Descendre.getInstance().unlock();
+    private void manageAnimations(boolean inProgress) {
+        if (!inProgress) {
+            if (debugMode) System.out.println("Niveau actuel: " + getEngine().getActualLevel());
+            if (getEngine().getNextStop().get() == getEngine().getActualLevel().get()) {
+                getEngine().executeOuverturePortes();
             } else {
-                OuverturePortes.getInstance().unlock();
+                if (getEngine().getActualDirection().get().equals("UP")) getEngine().executeMonter();
+                else getEngine().executeDescendre();
             }
         }
     }
@@ -98,9 +87,9 @@ public class ControleurMoteur implements PropertyChangeListener {
             isNumeric = false;
         }
         if (isNumeric)
-            DeplacementNiveau.getInstance().notifyEngine(value);
+            ascenseur.getDeplacementNiveau().notifyEngine(value);
         else if (value.equals("⚠"))
-            DemandeArretUrgence.getInstance().notifyEngine(!engine.isEmergencyStopped().get()+"");
+            ascenseur.getDemandeArretUrgence().notifyEngine(!getEngine().isEmergencyStopped().get()+"");
         else if (value.length() > 1 && (value.contains("UP") || value.contains("DOWN"))) {
             try {
                 Integer.parseInt(value.substring(0,1));
@@ -108,9 +97,9 @@ public class ControleurMoteur implements PropertyChangeListener {
                 e.printStackTrace();
             }
             if (value.contains("UP"))
-                AppelMonter.getInstance().notifyEngine(value.substring(0,1));
+                ascenseur.getAppelMonter().notifyEngine(value.substring(0,1));
             else
-                AppelDescendre.getInstance().notifyEngine(value.substring(0,1));
+                ascenseur.getAppelDescendre().notifyEngine(value.substring(0,1));
         }
     }
 
@@ -119,16 +108,11 @@ public class ControleurMoteur implements PropertyChangeListener {
      * @param value prochain arrêt
      */
     private void manageNextStop(int value) {
-        if (engine.getActualLevel().get() == engine.getNextStop().get()) {
-            try {
-                sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        if (getEngine().getActualLevel().get() == getEngine().getNextStop().get()) {
             manageLevelChange(value);
         } else {
-            if (Monter.getInstance().isLocked()) Monter.getInstance().unlock();
-            else if (Descendre.getInstance().isLocked()) Descendre.getInstance().unlock();
+            if (getEngine().getActualDirection().get().equals("UP")) getEngine().executeMonter();
+            else getEngine().executeDescendre();
             if (debugMode) {
                 if (value != -1) System.out.println("Arrêt prochain niveau :" + value);
                 else System.out.println("Attente du prochain arrêt.");
@@ -141,7 +125,7 @@ public class ControleurMoteur implements PropertyChangeListener {
      * @param value niveau
      */
     private void manageLevelChange(int value) {
-        if (value != -1) view.getAscenseurCanvas().animateMove(value);
+        if (value != -1) getView().getAscenseurCanvas().animateMove(value);
     }
 
     /**
@@ -149,16 +133,16 @@ public class ControleurMoteur implements PropertyChangeListener {
      */
     private void manageDoorOpening(boolean isOpen) {
         if (isOpen) {
-            view.getInButtonsCanvas().clearActiveButton(engine.getActualLevel().toString());
+            getView().getInButtonsCanvas().clearActiveButton(getEngine().getActualLevel().toString());
             String buttonToClear;
-            if (!engine.getNextUpLevels().isEmpty() && !engine.getNextDownLevels().isEmpty() &&
-                engine.getActualLevel().get() > 0 && engine.getActualLevel().get() < engine.getLevels())
-                buttonToClear = engine.getActualLevel().toString() + engine.getActualDirection();
+            if (!getEngine().getNextUpLevels().isEmpty() && !getEngine().getNextDownLevels().isEmpty() &&
+                getEngine().getActualLevel().get() > 0 && getEngine().getActualLevel().get() < getEngine().getLevels())
+                buttonToClear = getEngine().getActualLevel().toString() + getEngine().getActualDirection();
             else
-                buttonToClear = engine.getActualLevel().toString();
-            view.getOutButtonsCanvas().clearActiveButton(buttonToClear);
+                buttonToClear = getEngine().getActualLevel().toString();
+            getView().getOutButtonsCanvas().clearActiveButton(buttonToClear);
         }
-        view.getAscenseurCanvas().setOpen(isOpen);
+        getView().getAscenseurCanvas().setOpen(isOpen);
     }
 
     /**
@@ -166,6 +150,12 @@ public class ControleurMoteur implements PropertyChangeListener {
      * @param value valeur
      */
     private void manageEmergencyStop(boolean value) {
-        view.getAscenseurCanvas().setEmergencyStopped(value);
+        getView().getAscenseurCanvas().setEmergencyStopped(value);
     }
+
+    /*** GETTERS & SETTERS ***/
+
+    private Moteur getEngine() { return ascenseur.getEngine(); }
+
+    private VueAscenseur getView() { return ascenseur.getView(); }
 }
