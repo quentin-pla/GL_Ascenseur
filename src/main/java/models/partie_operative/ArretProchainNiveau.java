@@ -25,18 +25,18 @@ public class ArretProchainNiveau extends CommandeSysteme {
             final String actualDirection = getEngine().getActualDirection().get();
             final int actualLevel = getEngine().getActualLevel().get();
             String nextAdd = "";
-            if (actualDirection.equals("")) direction = "";
+            if (actualDirection.equals("STATIC") || actualDirection.equals("")) direction = "";
             switch (direction) {
                 case "UP":
                     switch (actualDirection) {
                         case "UP": nextAdd = actualLevel < nextLevel ? "UP" : "DOWN"; break;
-                        case "DOWN": nextAdd = "UP"; break;
+                        case "DOWN": nextAdd = actualLevel > nextLevel ? "UP" : "DOWN"; break;
                         default: break;
                     }
                     break;
                 case "DOWN":
                     switch (actualDirection) {
-                        case "UP": nextAdd = "DOWN"; break;
+                        case "UP": nextAdd = actualLevel < nextLevel ? "DOWN" : "UP"; break;
                         case "DOWN": nextAdd = actualLevel > nextLevel ? "DOWN" : "UP"; break;
                         default: break;
                     }
@@ -71,7 +71,6 @@ public class ArretProchainNiveau extends CommandeSysteme {
                 default:
                     break;
             }
-            if (getEngine().isDebugMode()) System.out.println("up: " + getEngine().getNextUpLevels() + " down: " + getEngine().getNextDownLevels());
             if (move) getEngine().moveToNextLevel();
         }
     }

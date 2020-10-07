@@ -11,13 +11,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Moteur de l'ascenseur
+ * Moteur de traction de l'ascenseur
  */
 public class MoteurTraction {
     /**
      * Mode de débugage
      */
-    private boolean debugMode = true;
+    private boolean debugMode = false;
 
     /**
      * Nombre de niveaux (constant)
@@ -173,6 +173,7 @@ public class MoteurTraction {
      * Se déplacer au prochain niveau
      */
     public void moveToNextLevel() {
+        if (debugMode) System.out.println("up: " + nextUpLevels + " down: " + nextDownLevels);
         setActualDirection(getNextDirection());
         if (debugMode) System.out.println("Next direction: " + getActualDirection());
         if (debugMode) System.out.println("Next level: " + getNextLevel());
@@ -191,7 +192,6 @@ public class MoteurTraction {
         final String direction = actualDirection.get();
         if (direction.equals("UP")) nextUpLevels.remove();
         else if (direction.equals("DOWN")) nextDownLevels.remove();
-        if (debugMode) System.out.println("up: " + nextUpLevels + " down: " + nextDownLevels);
         moveToNextLevel();
     }
 
@@ -219,6 +219,7 @@ public class MoteurTraction {
     public void checkActualPosition() {
         if (!isMoving()) {
             setActualLevel(actualPosition.get() / 100);
+            if (!debugMode) System.out.println("Niveau " + actualLevel);
             final String direction = actualDirection.get();
             final int level = actualLevel.get();
             if (direction.equals("UP") && level == getNextLevel() ||

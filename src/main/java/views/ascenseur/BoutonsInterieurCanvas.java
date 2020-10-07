@@ -111,7 +111,7 @@ public class BoutonsInterieurCanvas extends JPanel implements MouseListener {
      * @param value valeur
      */
     private void newInput(String value) {
-        if (Integer.parseInt(value) <= levels) {
+        if (value.equals("⚠") || Integer.parseInt(value) <= levels) {
             if (!activeButtons.contains(value)) activeButtons.add(value);
             else if (value.equals("⚠")) activeButtons.remove("⚠");
             view.notifyListeners("buttonInput", value);

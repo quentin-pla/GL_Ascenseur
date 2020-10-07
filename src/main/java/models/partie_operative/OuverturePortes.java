@@ -19,7 +19,7 @@ public class OuverturePortes extends CommandeSysteme {
     @Override
     public void run() {
         final String direction = getEngine().getActualDirection().get();
-        getEngine().setActualDirection("");
+        getEngine().setActualDirection("STATIC");
         try {
             sleep(500);
         } catch (InterruptedException e) {
