@@ -16,6 +16,11 @@ import java.util.Map;
  */
 public class BoutonsInterieurCanvas extends JPanel implements MouseListener {
     /**
+     * Nombre de niveaux
+     */
+    private int levels;
+
+    /**
      * Vue
      */
     private VueAscenseur view;
@@ -34,8 +39,9 @@ public class BoutonsInterieurCanvas extends JPanel implements MouseListener {
      * Constructeur
      * @param view vue
      */
-    public BoutonsInterieurCanvas(VueAscenseur view) {
+    public BoutonsInterieurCanvas(VueAscenseur view, int levels) {
         this.view = view;
+        this.levels = levels;
         this.buttons = new HashMap<>();
         this.activeButtons = new ArrayList<>();
         addMouseListener(this);
@@ -105,10 +111,12 @@ public class BoutonsInterieurCanvas extends JPanel implements MouseListener {
      * @param value valeur
      */
     private void newInput(String value) {
-        if (!activeButtons.contains(value)) activeButtons.add(value);
-        else if (value.equals("⚠")) activeButtons.remove("⚠");
-        view.notifyListeners("buttonInput", value);
-        repaint();
+        if (Integer.parseInt(value) <= levels) {
+            if (!activeButtons.contains(value)) activeButtons.add(value);
+            else if (value.equals("⚠")) activeButtons.remove("⚠");
+            view.notifyListeners("buttonInput", value);
+            repaint();
+        }
     }
 
     @Override

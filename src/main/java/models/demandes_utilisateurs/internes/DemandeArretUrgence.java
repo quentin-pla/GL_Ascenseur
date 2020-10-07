@@ -1,16 +1,16 @@
-package models.commandes.utilisateur.interieur;
+package models.demandes_utilisateurs.internes;
 
-import models.Moteur;
-import models.commandes.utilisateur.CommandeUtilisateur;
+import models.MoteurTraction;
+import models.demandes_utilisateurs.DemandeUtilisateur;
 
 /**
  * Commande utilisateur pour demander un arrêt d'urgence
  */
-public class DemandeArretUrgence extends CommandeUtilisateur {
+public class DemandeArretUrgence extends DemandeUtilisateur {
     /**
      * Constructeur
      */
-    public DemandeArretUrgence(Moteur engine) {
+    public DemandeArretUrgence(MoteurTraction engine) {
         super(engine);
         argsCount = 1;
     }

@@ -1,21 +1,12 @@
 package views.ascenseur;
 
-import views.VueAscenseur;
-
 import javax.swing.*;
 import java.awt.*;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Graphique de l'ascenseur
  */
 public class AscenseurCanvas extends JPanel {
-    /**
-     * Vue
-     */
-    private VueAscenseur view;
-
     /**
      * Nombre de niveaux
      */
@@ -32,34 +23,9 @@ public class AscenseurCanvas extends JPanel {
     private int ascenseurYPosition;
 
     /**
-     * Prochaine position de l'ascenseur
-     */
-    private int nextPosition;
-
-    /**
-     * Direction de l'ascenseur
-     */
-    private String direction;
-
-    /**
      * Ascenseur ouvert ?
      */
     private boolean isOpen;
-
-    /**
-     * Ascenseur arrêté d'urgence ?
-     */
-    private boolean isEmergencyStopped;
-
-    /**
-     * Timer gérant l'animation
-     */
-    private Timer timer;
-
-    /**
-     * Animation de l'ascenseur
-     */
-    private TimerTask animation;
 
     /**
      * Départ positionnement horizontal
@@ -73,52 +39,16 @@ public class AscenseurCanvas extends JPanel {
 
     /**
      * Constructeur
-     * @param view vue
      * @param levels niveaux
      * @param defaultLevel niveau par défaut
      */
-    public AscenseurCanvas(VueAscenseur view, int levels, int defaultLevel) {
-        this.view = view;
+    public AscenseurCanvas(int levels, int defaultLevel) {
         this.levels = levels;
         this.levelGap = 100;
         this.ascenseurYPosition = getAscenseurYPosition(defaultLevel);
-        this.nextPosition = -1;
-        this.direction = "";
         this.isOpen = false;
-        this.isEmergencyStopped = false;
         this.hStart = 90;
         this.vStart = 100;
-    }
-
-    /**
-     * Initialisation de l'animation
-     */
-    private void initAnimation() {
-        timer = new Timer();
-        animation = new TimerTask() {
-            @Override
-            public void run() {
-                if (!isEmergencyStopped) {
-                    if (direction.equals("UP") && ascenseurYPosition > nextPosition) {
-                        --ascenseurYPosition;
-                        if (ascenseurYPosition <= nextPosition) {
-                            view.setAnimationRunning(false);
-                            timer.cancel();
-                        }
-                    } else if (direction.equals("DOWN") && ascenseurYPosition < nextPosition) {
-                        ++ascenseurYPosition;
-                        if (ascenseurYPosition >= nextPosition) {
-                            view.setAnimationRunning(false);
-                            timer.cancel();
-                        }
-                    } else {
-                        view.setAnimationRunning(false);
-                        timer.cancel();
-                    }
-                    repaint();
-                }
-            }
-        };
     }
 
     @Override
@@ -137,12 +67,12 @@ public class AscenseurCanvas extends JPanel {
     }
 
     /**
-     * Obtenir la position de l'ascenseur en fonction d'un niveau
-     * @param level niveau
+     * Obtenir la position en pixels de l'ascenseur en fonction de sa position réelle
+     * @param position position réelle
      * @return position de l'ascenseur
      */
-    private int getAscenseurYPosition(int level) {
-        return (levels * levelGap + 50) - (levelGap * level);
+    private int getAscenseurYPosition(int position) {
+        return (int) ((levels * levelGap + 50) - (levelGap * ((double) position / 100)));
     }
 
     /**
@@ -170,20 +100,6 @@ public class AscenseurCanvas extends JPanel {
         else g.fillRect(hStart+20,ascenseurYPosition,30,50);
     }
 
-    /**
-     * Animer l'ascenseur lors du changement de niveau
-     * @param level niveau à atteindre
-     */
-    public void animateMove(int level) {
-        if (!isOpen && level >= 0 && level <= levels) {
-            nextPosition = getAscenseurYPosition(level);
-            direction = (nextPosition == ascenseurYPosition) ? "" : (nextPosition < ascenseurYPosition) ? "UP" : "DOWN";
-            view.setAnimationRunning(true);
-            initAnimation();
-            timer.schedule(animation, 0, 10);
-        }
-    }
-
     /*** GETTERS & SETTERS ***/
 
     public void setOpen(boolean open) {
@@ -191,7 +107,8 @@ public class AscenseurCanvas extends JPanel {
         repaint();
     }
 
-    public void setEmergencyStopped(boolean value) {
-        isEmergencyStopped = value;
+    public void setAscenseurYPosition(int position) {
+        ascenseurYPosition = getAscenseurYPosition(position);
+        repaint();
     }
 }

@@ -1,16 +1,16 @@
-package models.commandes.utilisateur.interieur;
+package models.demandes_utilisateurs.internes;
 
-import models.Moteur;
-import models.commandes.utilisateur.CommandeUtilisateur;
+import models.MoteurTraction;
+import models.demandes_utilisateurs.DemandeUtilisateur;
 
 /**
  * Commande moteur pour se déplacer à un niveau spécifique
  */
-public class DeplacementNiveau extends CommandeUtilisateur {
+public class DeplacementNiveau extends DemandeUtilisateur {
     /**
      * Constructeur
      */
-    public DeplacementNiveau(Moteur engine) {
+    public DeplacementNiveau(MoteurTraction engine) {
         super(engine);
         argsCount = 1;
         preArgs.add(""); //Direction

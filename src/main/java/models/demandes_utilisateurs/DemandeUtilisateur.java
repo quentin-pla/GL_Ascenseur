@@ -1,6 +1,6 @@
-package models.commandes.utilisateur;
+package models.demandes_utilisateurs;
 
-import models.Moteur;
+import models.MoteurTraction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,11 +9,11 @@ import java.util.List;
 /**
  * Commande utilisateur abstraite
  */
-public abstract class CommandeUtilisateur {
+public abstract class DemandeUtilisateur {
     /**
      * Moteur relié
      */
-    protected Moteur engine;
+    protected MoteurTraction engine;
 
     /**
      * Paramètres prédéfinis
@@ -29,7 +29,7 @@ public abstract class CommandeUtilisateur {
      * Constructeur
      * @param engine moteur
      */
-    public CommandeUtilisateur(Moteur engine) {
+    public DemandeUtilisateur(MoteurTraction engine) {
         this.engine = engine;
         this.preArgs = new ArrayList<>();
     }

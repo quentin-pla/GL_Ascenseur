@@ -36,20 +36,14 @@ public class VueAscenseur extends JFrame {
     private BoutonsExterieurCanvas outButtonsCanvas;
 
     /**
-     * Animation en cours
-     */
-    private boolean animationRunning;
-
-    /**
      * Constructeur
      * @param levels niveaux
      * @param defaultLevel niveau par défaut
      */
     public VueAscenseur(int levels, int defaultLevel) {
-        this.ascenseurCanvas = new AscenseurCanvas(this, levels, defaultLevel);
-        this.inButtonsCanvas = new BoutonsInterieurCanvas(this);
+        this.ascenseurCanvas = new AscenseurCanvas(levels, defaultLevel);
+        this.inButtonsCanvas = new BoutonsInterieurCanvas(this, levels);
         this.outButtonsCanvas = new BoutonsExterieurCanvas(this, levels);
-        this.animationRunning = false;
         initFrame(levels);
     }
 
@@ -88,9 +82,4 @@ public class VueAscenseur extends JFrame {
     }
 
     public BoutonsExterieurCanvas getOutButtonsCanvas() { return outButtonsCanvas; }
-
-    public void setAnimationRunning(boolean animationRunning) {
-        this.animationRunning = animationRunning;
-        notifyListeners("animationRunning",this.animationRunning+"");
-    }
 }

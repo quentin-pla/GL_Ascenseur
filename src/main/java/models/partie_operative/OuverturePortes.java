@@ -1,42 +1,45 @@
-package models.commandes.moteur;
+package models.partie_operative;
 
-import models.Moteur;
+import models.MoteurTraction;
 
 import static java.lang.Thread.sleep;
 
 /**
  * Commande moteur pour gérer l'ouverture des portes
  */
-public class OuverturePortes extends CommandeMoteur {
+public class OuverturePortes extends CommandeSysteme {
     /**
      * Constructeur
      * @param engine moteur
      */
-    public OuverturePortes(Moteur engine) {
+    public OuverturePortes(MoteurTraction engine) {
         super(engine);
     }
 
     @Override
     public void run() {
+        final String direction = getEngine().getActualDirection().get();
+        getEngine().setActualDirection("");
         try {
-            sleep(1000);
+            sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         getEngine().setIsOpen(true);
-        System.out.println("<- Ouverture ->");
+        if (!getEngine().isDebugMode()) System.out.println("<- Ouverture ->");
         try {
-            sleep(2000);
+            sleep(1500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         getEngine().setIsOpen(false);
-        System.out.println("-> Fermeture <-");
+        if (!getEngine().isDebugMode()) System.out.println("-> Fermeture <-");
         try {
-            sleep(1000);
+            sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        getEngine().setActualDirection(direction);
         getEngine().levelPerformed();
     }
 }

@@ -1,16 +1,16 @@
-package models.commandes.utilisateur.exterieur;
+package models.demandes_utilisateurs.externes;
 
-import models.Moteur;
-import models.commandes.utilisateur.CommandeUtilisateur;
+import models.MoteurTraction;
+import models.demandes_utilisateurs.DemandeUtilisateur;
 
 /**
  * Commande utilisateur pour appeler l'ascenseur et descendre
  */
-public class AppelDescendre extends CommandeUtilisateur {
+public class AppelDescendre extends DemandeUtilisateur {
     /**
      * Constructeur
      */
-    public AppelDescendre(Moteur engine) {
+    public AppelDescendre(MoteurTraction engine) {
         super(engine);
         argsCount = 1; //Un argument pour savoir depuis quel niveau l'appel a été spécifié
         preArgs.add("DOWN"); //Direction souhaitée

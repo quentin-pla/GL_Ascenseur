@@ -1,16 +1,16 @@
-package models.commandes.moteur;
+package models.partie_operative;
 
-import models.Moteur;
+import models.MoteurTraction;
 
 /**
  * Commande moteur gérant les arrêts d'urgence
  */
-public class ArretUrgence extends CommandeMoteur {
+public class ArretUrgence extends CommandeSysteme {
     /**
      * Constructeur
      * @param engine moteur
      */
-    public ArretUrgence(Moteur engine) {
+    public ArretUrgence(MoteurTraction engine) {
         super(engine);
         argsCount = 1;
     }

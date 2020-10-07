@@ -1,16 +1,16 @@
-package models.commandes.moteur;
+package models.partie_operative;
 
-import models.Moteur;
+import models.MoteurTraction;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Commande moteur abstraite
  */
-public abstract class CommandeMoteur implements Runnable {
+public abstract class CommandeSysteme implements Runnable {
     /**
      * Moteur lié
      */
-    protected AtomicReference<Moteur> engine;
+    protected AtomicReference<MoteurTraction> engine;
 
     /**
      * Arguments passés en paramètre
@@ -26,7 +26,7 @@ public abstract class CommandeMoteur implements Runnable {
      * Constructeur
      * @param engine moteur
      */
-    public CommandeMoteur(Moteur engine) {
+    public CommandeSysteme(MoteurTraction engine) {
         this.engine = new AtomicReference<>(engine);
         this.args = new String[]{};
         this.argsCount = 0;
@@ -48,25 +48,24 @@ public abstract class CommandeMoteur implements Runnable {
      * @param level niveau
      * @return niveau vérifié et convertit en entier
      */
-    protected int checkArgLevel(String level) {
-        int calledLevel = 0;
+    protected boolean checkArgLevel(String level) {
+        int calledLevel;
         try {
             calledLevel = Integer.parseInt(level);
             if (calledLevel < 0 || calledLevel > getEngine().getLevels())
                 throw new Exception("Niveau invalide");
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return calledLevel;
+        return true;
     }
 
     /*** GETTERS & SETTERS ***/
 
-    public Moteur getEngine() {
+    public MoteurTraction getEngine() {
         return engine.get();
     }
-
-    public String[] getArgs() { return args; }
 
     public void setArgs(String... args) {
         this.args = args;
